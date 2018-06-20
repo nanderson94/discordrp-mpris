@@ -11,6 +11,7 @@ from discord_rpc.async_ import (AsyncDiscordRpc, DiscordRpcError, JSON,
 
 from .config import Config
 
+''' #master
 CLIENT_ID = '435587535150907392'
 PLAYER_ICONS = {
     'Clementine': 'clementine',
@@ -18,6 +19,17 @@ PLAYER_ICONS = {
     'mpv': 'mpv',
     'Music Player Daemon': 'mpd',
     'VLC media player': 'vlc',
+}
+'''
+
+CLIENT_ID = '458697522915835925'
+PLAYER_ICONS = {
+    'Chromium': 'chromium',
+    'Clementine': 'clementine',
+    'Firefox Web Browser': 'firefox',
+    'Media Player Classic Qute Theater': 'mpc-qt',
+    'mpv': 'mpv',
+    'VLC media player': 'vlc'
 }
 
 logger = logging.getLogger(__name__)
