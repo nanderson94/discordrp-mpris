@@ -27,8 +27,10 @@ PLAYER_ICONS = {
     'Chromium': 'chromium',
     'Clementine': 'clementine',
     'Firefox Web Browser': 'firefox',
+    'Gwenview': 'gwenview',
     'Media Player Classic Qute Theater': 'mpc-qt',
     'mpv': 'mpv',
+    'SMPlayer': 'smplayer',
     'VLC media player': 'vlc'
 }
 
@@ -141,9 +143,15 @@ class DiscordMpris:
             elif show_time == 'remaining':
                 end_time = start_time + (length / 1e6)
                 activity['timestamps']['end'] = end_time
-            activity['state'] = self.format_details("{state} [{length}]", replacements)
+            if replacements['length'] != "0:00":
+                activity['state'] = self.format_details("{state} [{length}]", replacements)
+            else:
+                activity['state'] = self.format_details("{state}", replacements)
         elif state == ampris2.PlaybackStatus.PAUSED:
-            activity['state'] = self.format_details("{state} [{position}/{length}]", replacements)
+            if replacements['length'] != "0:00":
+                activity['state'] = self.format_details("{state} [{position}/{length}]", replacements)
+            else:
+                activity['state'] = self.format_details("{state} [{position}]", replacements)
         else:
             activity['state'] = self.format_details("{state}", replacements)
 
@@ -241,7 +249,12 @@ class DiscordMpris:
                             ) -> List[List[ampris2.PlayerInterfaces]]:
         groups: List[List[ampris2.PlayerInterfaces]] = [[], [], []]
         for p in players:
-            state = ampris2.PlaybackStatus(await p.player.PlaybackStatus)  # type: ignore
+            playbackStatus = await p.player.PlaybackStatus
+            try:
+                state = ampris2.PlaybackStatus(playbackStatus)
+            except ValueError as error:
+                logger.info(f"Caugh a ValueError {playbackStatus}")
+                continue
             i = STATE_PRIORITY.index(state)
             groups[i].append(p)
 
@@ -251,6 +264,7 @@ class DiscordMpris:
     def format_timestamp(microsecs: Optional[int]) -> Optional[str]:
         if microsecs is None:
             return None
+        microsecs = int(microsecs)
         secs = microsecs // int(1e6)
         mins = secs // 60
         hours = mins // 60
