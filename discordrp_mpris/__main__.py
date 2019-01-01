@@ -155,6 +155,11 @@ class DiscordMpris:
         else:
             activity['state'] = self.format_details("{state}", replacements)
 
+        # imperfect YouTube streaming patch
+        if replacements['album'] == 'https://www.youtube.com' and replacements['length'] == '6:00:00':
+            activity['state'] = f"{state} [LIVE]"
+            activity['timestamps'] = {}
+
         # set icons and hover texts
         if player.name in PLAYER_ICONS:
             activity['assets'] = {'large_text': player.name,
@@ -165,6 +170,7 @@ class DiscordMpris:
             activity['assets'] = {'large_text': f"{player.name} ({state})",
                                   'large_image': state.lower()}
 
+        print(activity)
         if activity != self.last_activity:
             op_recv, result = await self.discord.set_activity(activity)
             if result['evt'] == 'ERROR':
