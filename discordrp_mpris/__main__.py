@@ -18,8 +18,7 @@ PLAYER_ICONS = {
     'Media Player Classic Qute Theater': 'mpc-qt',
     'mpv': 'mpv',
     'Music Player Daemon': 'mpd',
-    'VLC media player': 'vlc',
-}
+    'VLC media player': 'vlc'
 '''
 
 CLIENT_ID = '458697522915835925'
@@ -31,7 +30,8 @@ PLAYER_ICONS = {
     'Media Player Classic Qute Theater': 'mpc-qt',
     'mpv': 'mpv',
     'SMPlayer': 'smplayer',
-    'VLC media player': 'vlc'
+    'VLC media player': 'vlc',
+    'youtube': 'youtube'
 }
 
 logger = logging.getLogger(__name__)
@@ -125,15 +125,7 @@ class DiscordMpris:
         replacements['player'] = player.name
         replacements['state'] = state
 
-        # TODO pref
-        if replacements['artist']:
-            # details_fmt = "{artist} - {title}"
-            details_fmt = "{title}\nby {artist}"
-        else:
-            details_fmt = "{title}"
-        activity['details'] = self.format_details(details_fmt, replacements)
-
-        # set state and timestamps
+        # set timestamps, small text (and state fallback)
         activity['timestamps'] = {}
         if state == ampris2.PlaybackStatus.PLAYING:
             show_time = self.config.player_get(player, 'show_time', 'elapsed')
@@ -144,33 +136,38 @@ class DiscordMpris:
                 end_time = start_time + (length / 1e6)
                 activity['timestamps']['end'] = end_time
             if replacements['length'] != "0:00":
-                activity['state'] = self.format_details("{state} [{length}]", replacements)
+                small_text = self.format_details("{state} [{length}]", replacements)
+            elif player.name == "youtube":
+                small_text = self.format_details("{state} [LIVE]", replacements)
             else:
-                activity['state'] = self.format_details("{state}", replacements)
+                small_text = self.format_details("{state}", replacements)
         elif state == ampris2.PlaybackStatus.PAUSED:
             if replacements['length'] != "0:00":
-                activity['state'] = self.format_details("{state} [{position}/{length}]", replacements)
+                small_text = self.format_details("{state} [{position}/{length}]", replacements)
             else:
-                activity['state'] = self.format_details("{state} [{position}]", replacements)
+                small_text = self.format_details("{state} [{position}]", replacements)
         else:
-            activity['state'] = self.format_details("{state}", replacements)
+            small_text = self.format_details("{state}", replacements)
 
-        # imperfect YouTube streaming patch
-        if replacements['album'] == 'https://www.youtube.com' and replacements['length'] == '6:00:00':
-            activity['state'] = f"{state} [LIVE]"
-            activity['timestamps'] = {}
+        # set details and state
+        activity['details'] = self.format_details("{title}", replacements)
+        if replacements['artist']:
+            activity['state'] = self.format_details("{artist}", replacements)
+        elif replacements['album']:
+            activity['state'] = self.format_details("{album}", replacements)
+        else:
+            activity['state'] = small_text
 
         # set icons and hover texts
         if player.name in PLAYER_ICONS:
             activity['assets'] = {'large_text': player.name,
                                   'large_image': PLAYER_ICONS[player.name],
                                   'small_image': state.lower(),
-                                  'small_text': state}
+                                  'small_text': small_text}
         else:
             activity['assets'] = {'large_text': f"{player.name} ({state})",
                                   'large_image': state.lower()}
 
-        print(activity)
         if activity != self.last_activity:
             op_recv, result = await self.discord.set_activity(activity)
             if result['evt'] == 'ERROR':
