@@ -28,7 +28,7 @@ PLAYER_ICONS = {
     'Firefox Web Browser': 'firefox-papirus',
     'Gwenview': 'gwenview-papirus',
     'Media Player Classic Qute Theater': 'mpc-qt-papirus',
-    'mpv': 'mpv-papirus,
+    'mpv': 'mpv-papirus',
     'SMPlayer': 'smplayer-papirus',
     'VLC media player': 'vlc-papirus',
     'youtube': 'youtube-papirus'
