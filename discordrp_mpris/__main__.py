@@ -21,17 +21,17 @@ PLAYER_ICONS = {
     'VLC media player': 'vlc'
 '''
 
-CLIENT_ID = '458697522915835925'
+CLIENT_ID = '634301827558670357'
 PLAYER_ICONS = {
-    'Chromium': 'chromium',
-    'Clementine': 'clementine',
-    'Firefox Web Browser': 'firefox',
-    'Gwenview': 'gwenview',
-    'Media Player Classic Qute Theater': 'mpc-qt',
-    'mpv': 'mpv',
-    'SMPlayer': 'smplayer',
-    'VLC media player': 'vlc',
-    'youtube': 'youtube'
+    'Chromium': 'chromium-papirus',
+    'Clementine': 'clementine-papirus',
+    'Firefox Web Browser': 'firefox-papirus',
+    'Gwenview': 'gwenview-papirus',
+    'Media Player Classic Qute Theater': 'mpc-qt-papirus',
+    'mpv': 'mpv-papirus,
+    'SMPlayer': 'smplayer-papirus',
+    'VLC media player': 'vlc-papirus',
+    'youtube': 'youtube-papirus'
 }
 
 logger = logging.getLogger(__name__)
