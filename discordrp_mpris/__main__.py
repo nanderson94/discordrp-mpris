@@ -11,7 +11,7 @@ from discord_rpc.async_ import (AsyncDiscordRpc, DiscordRpcError, JSON,
 
 from .config import Config
 
-''' #master
+''' # master
 CLIENT_ID = '435587535150907392'
 PLAYER_ICONS = {
     'Clementine': 'clementine',
@@ -21,11 +21,16 @@ PLAYER_ICONS = {
     'VLC media player': 'vlc'
 '''
 
+# The icons below use Papirus icon theme.
+# https://github.com/PapirusDevelopmentTeam/papirus-icon-theme/.
+# Unless stated otherwise, their original icons can be used
+# by removing "-papirus" suffix.
 CLIENT_ID = '634301827558670357'
 PLAYER_ICONS = {
     'Chromium': 'chromium-papirus',
     'Clementine': 'clementine-papirus',
     'Firefox Web Browser': 'firefox-papirus',
+    'Google Chrome': 'google-chrome-papirus', # papirus icon only
     'Gwenview': 'gwenview-papirus',
     'Media Player Classic Qute Theater': 'mpc-qt-papirus',
     'mpv': 'mpv-papirus',
