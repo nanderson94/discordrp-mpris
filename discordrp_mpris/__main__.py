@@ -36,6 +36,7 @@ PLAYER_ICONS = {
     'Media Player Classic Qute Theater': 'mpc-qt-papirus',
     'mpv': 'mpv-papirus',
     'SMPlayer': 'smplayer-papirus',
+    'Strawberry': 'strawberry-papirus', # papirus icon only
     'VLC media player': 'vlc-papirus',
     'youtube': 'youtube-papirus'
 }
