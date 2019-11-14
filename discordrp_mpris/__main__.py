@@ -29,6 +29,7 @@ CLIENT_ID = '634301827558670357'
 PLAYER_ICONS = {
     'Chromium': 'chromium-papirus',
     'Clementine': 'clementine-papirus',
+    'Elisa': 'elisa-papirus', # papirus icon only
     'Firefox Web Browser': 'firefox-papirus',
     'Google Chrome': 'google-chrome-papirus', # papirus icon only
     'Gwenview': 'gwenview-papirus',
@@ -86,8 +87,11 @@ class DiscordMpris:
             except async_exceptions as e:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug("Connection error during tick", exc_info=e)
-                logger.info("Connection to Discord client lost. Reconnecting...")
-                await self.connect_discord()
+                # logger.info("Connection to Discord client lost. Reconnecting...")
+                # await self.connect_discord()
+                # NOTE exits when connection lost, cause restarting seems to be more reliable
+                logger.info("Connection to Discord client lost.")
+                return 1
 
             except dbussy.DBusError as e:
                 if e.name == "org.freedesktop.DBus.Error.ServiceUnknown":
