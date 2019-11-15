@@ -181,6 +181,19 @@ class DiscordMpris:
             activity['assets'] = {'large_text': f"{player.name} ({state})",
                                   'large_image': state.lower()}
 
+        # slice strings
+        if activity['state'] and (len(activity['state']) > 128):
+            activity['state'] = activity['state'][:127] + '\u2026'
+
+        if activity['details'] and (len(activity['details']) > 128):
+            activity['details'] = activity['details'][:127] + '\u2026'
+
+        if activity['assets']['large_text'] and (len(activity['assets']['large_text']) > 128):
+            activity['assets']['large_text'] = activity['assets']['large_text'][:127] + '\u2026'
+            
+        if activity['assets']['small_text'] and (len(activity['assets']['small_text']) > 128):
+            activity['assets']['small_text'] = activity['assets']['small_text'][:127] + '\u2026'
+
         if activity != self.last_activity:
             op_recv, result = await self.discord.set_activity(activity)
             if result['evt'] == 'ERROR':
