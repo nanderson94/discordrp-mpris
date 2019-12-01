@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 import sys
 import time
 from typing import Dict, Iterable, List, Optional
@@ -38,7 +39,8 @@ PLAYER_ICONS = {
     'SMPlayer': 'smplayer-papirus',
     'Strawberry': 'strawberry-papirus', # papirus icon only
     'VLC media player': 'vlc-papirus',
-    'youtube': 'youtube-papirus'
+    'YouTube on Firefox Web Browser': 'youtube-papirus',
+    'youtube': 'youtube-papirus' # i forgot which app used this exact player name for its mpris2 interface
 }
 
 logger = logging.getLogger(__name__)
@@ -135,6 +137,13 @@ class DiscordMpris:
         replacements['player'] = player.name
         replacements['state'] = state
 
+        # currently having interface issues with Chromium browsers
+        # otherwise (player.bus_name == "plasma-browser-integration") would be a decent alternative
+        if player.name == "Firefox Web Browser" and replacements['xesam_url']:
+            matchObj = re.match(r'^https://(www|music)\.youtube\.com/watch\?.*$', replacements['xesam_url'], re.M)
+            if matchObj:
+                replacements['player'] = f"YouTube on {player.name}"
+
         # set timestamps, small text (and state fallback)
         activity['timestamps'] = {}
         if state == ampris2.PlaybackStatus.PLAYING:
@@ -172,13 +181,13 @@ class DiscordMpris:
             activity['state'] = small_text
 
         # set icons and hover texts
-        if player.name in PLAYER_ICONS:
-            activity['assets'] = {'large_text': player.name,
-                                  'large_image': PLAYER_ICONS[player.name],
+        if replacements['player'] in PLAYER_ICONS:
+            activity['assets'] = {'large_text': replacements['player'],
+                                  'large_image': PLAYER_ICONS[replacements['player']],
                                   'small_image': state.lower(),
                                   'small_text': small_text}
         else:
-            activity['assets'] = {'large_text': f"{player.name} ({state})",
+            activity['assets'] = {'large_text': f"{replacements['player']} ({state})",
                                   'large_image': state.lower()}
 
         # slice strings
@@ -188,10 +197,10 @@ class DiscordMpris:
         if activity['details'] and (len(activity['details']) > 128):
             activity['details'] = activity['details'][:127] + '\u2026'
 
-        if activity['assets']['large_text'] and (len(activity['assets']['large_text']) > 128):
+        if 'large_text' in activity['assets'] and (len(activity['assets']['large_text']) > 128):
             activity['assets']['large_text'] = activity['assets']['large_text'][:127] + '\u2026'
-            
-        if activity['assets']['small_text'] and (len(activity['assets']['small_text']) > 128):
+
+        if 'small_text' in activity['assets'] and (len(activity['assets']['small_text']) > 128):
             activity['assets']['small_text'] = activity['assets']['small_text'][:127] + '\u2026'
 
         if activity != self.last_activity:
