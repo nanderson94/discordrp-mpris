@@ -31,15 +31,15 @@ PLAYER_ICONS = {
     'Chromium': 'chromium-papirus',
     'Clementine': 'clementine-papirus',
     'Elisa': 'elisa-papirus', # papirus icon only
-    'Firefox Web Browser': 'firefox-papirus',
     'Google Chrome': 'google-chrome-papirus', # papirus icon only
     'Gwenview': 'gwenview-papirus',
     'Media Player Classic Qute Theater': 'mpc-qt-papirus',
+    'Mozilla Firefox': 'firefox-papirus',
     'mpv': 'mpv-papirus',
     'SMPlayer': 'smplayer-papirus',
     'Strawberry': 'strawberry-papirus', # papirus icon only
     'VLC media player': 'vlc-papirus',
-    'YouTube on Firefox Web Browser': 'youtube-papirus',
+    'YouTube on Mozilla Firefox': 'youtube-papirus',
     'youtube': 'youtube-papirus' # i forgot which app used this exact player name for its mpris2 interface
 }
 
@@ -139,7 +139,7 @@ class DiscordMpris:
 
         # currently having interface issues with Chromium browsers
         # otherwise (player.bus_name == "plasma-browser-integration") would be a decent alternative
-        if player.name == "Firefox Web Browser" and replacements['xesam_url']:
+        if player.name == "Mozilla Firefox" and replacements['xesam_url']:
             matchObj = re.match(r'^https://(www|music)\.youtube\.com/watch\?.*$', replacements['xesam_url'], re.M)
             if matchObj:
                 replacements['player'] = f"YouTube on {player.name}"
