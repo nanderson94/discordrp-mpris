@@ -142,18 +142,23 @@ class DiscordMpris:
         replacements['player'] = player.name
         replacements['state'] = state
 
+        # icons
+        large_image = PLAYER_ICONS[replacements['player']]
+
         # attempt to use alias for large text
         if replacements['player'] in PLAYER_ALIASES:
             large_text = PLAYER_ALIASES[replacements['player']]
         else:
             large_text = replacements['player']
 
+        # modify large text if playing YouTube on web browsers
         # currently having interface issues with Chromium browsers
         # otherwise (player.bus_name == "plasma-browser-integration") would be a decent alternative
         if replacements['player'] == "Mozilla Firefox" and replacements['xesam_url']:
             matchObj = re.match(r'^https://(www|music)\.youtube\.com/watch\?.*$', replacements['xesam_url'], re.M)
             if matchObj:
                 large_text = f"YouTube on {large_text}"
+                large_image = PLAYER_ICONS[large_text]
 
         # set timestamps, small text (and state fallback)
         activity['timestamps'] = {}
@@ -194,7 +199,7 @@ class DiscordMpris:
         # set icons and hover texts
         if replacements['player'] in PLAYER_ICONS:
             activity['assets'] = {'large_text': large_text,
-                                  'large_image': PLAYER_ICONS[replacements['player']],
+                                  'large_image': large_image,
                                   'small_image': state.lower(),
                                   'small_text': small_text}
         else:
