@@ -29,7 +29,11 @@ Reply = Tuple[int, JSON]
 logger = logging.getLogger(__name__)
 
 # commonly thrown exceptions when connection is lost
-exceptions = (ConnectionResetError, BrokenPipeError, asyncio.streams.IncompleteReadError)
+exceptions = (ConnectionResetError, BrokenPipeError)
+try:
+    exceptions += (asyncio.streams.IncompleteReadError,)
+except AttributeError:
+    pass
 
 
 class DiscordRpcError(Exception):
@@ -77,17 +81,20 @@ class AsyncDiscordRpc(metaclass=ABCMeta):
         pass
 
     async def _do_handshake(self) -> None:
-        ret_op, ret_data = await self.send_recv({'v': 1, 'client_id': self.client_id},
-                                                op=OP_HANDSHAKE)
-        # {'cmd': 'DISPATCH', 'data': {'v': 1, 'config': {...}}, 'evt': 'READY', 'nonce': None}
-        if ret_op == OP_FRAME and ret_data['cmd'] == 'DISPATCH' and ret_data['evt'] == 'READY':
-            return
-        else:
-            # TOFIX: {'message': "Cannot read property 'id' of undefined"}
-            # ?????
-            if ret_op == OP_CLOSE:
-                await self.close()
-            raise RuntimeError(ret_data)
+        while True:
+            ret_op, ret_data = await self.send_recv({'v': 1, 'client_id': self.client_id},
+                                                    op=OP_HANDSHAKE)
+            # {'cmd': 'DISPATCH', 'data': {'v': 1, 'config': {...}}, 'evt': 'READY', 'nonce': None}
+            if ret_op == OP_FRAME and ret_data['cmd'] == 'DISPATCH' and ret_data['evt'] == 'READY':
+                return
+            else:
+                # No idea when or why this occurs; just try again.
+                if ret_data == {'message': "Cannot read property 'id' of undefined"}:
+                    await asyncio.sleep(0.3)
+                    continue
+                if ret_op == OP_CLOSE:
+                    await self.close()
+                raise RuntimeError(ret_data)
 
     @abstractmethod
     async def _write(self, date: bytes):

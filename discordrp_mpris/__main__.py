@@ -5,7 +5,7 @@ import sys
 import time
 from typing import Dict, Iterable, List, Optional
 
-import ampris2
+from ampris2 import Mpris2Dbussy, PlaybackStatus, PlayerInterfaces as Player, unwrap_metadata
 import dbussy
 from discord_rpc.async_ import (AsyncDiscordRpc, DiscordRpcError, JSON,
                                 exceptions as async_exceptions)
@@ -47,15 +47,14 @@ PLAYER_ALIASES = {
     'Elisa': 'Elisa Music Player',
     'Strawberry': 'Strawberry Music Player'
 }
+DEFAULT_LOG_LEVEL = logging.WARNING
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=DEFAULT_LOG_LEVEL)
 
-Player = ampris2.PlayerInterfaces  # type alias
-
-STATE_PRIORITY = (ampris2.PlaybackStatus.PLAYING,
-                  ampris2.PlaybackStatus.PAUSED,
-                  ampris2.PlaybackStatus.STOPPED)
+STATE_PRIORITY = (PlaybackStatus.PLAYING,
+                  PlaybackStatus.PAUSED,
+                  PlaybackStatus.STOPPED)
 
 
 class DiscordMpris:
@@ -63,13 +62,13 @@ class DiscordMpris:
     active_player: Optional[Player] = None
     last_activity: Optional[JSON] = None
 
-    def __init__(self, mpris: ampris2.Mpris2Dbussy, discord: AsyncDiscordRpc, config: Config,
+    def __init__(self, mpris: Mpris2Dbussy, discord: AsyncDiscordRpc, config: Config,
                  ) -> None:
         self.mpris = mpris
         self.discord = discord
         self.config = config
 
-    async def connect_discord(self):
+    async def connect_discord(self) -> None:
         if self.discord.connected:
             return
         logger.debug("Trying to connect to Discord client...")
@@ -132,7 +131,7 @@ class DiscordMpris:
                 player.player.Position,  # type: ignore
                 player.player.PlaybackStatus,  # type: ignore
             )
-        metadata = ampris2.unwrap_metadata(metadata)
+        metadata = unwrap_metadata(metadata)
         logger.debug(f"Metadata: {metadata}")
         length = metadata.get('mpris:length', 0)
 
@@ -162,7 +161,7 @@ class DiscordMpris:
 
         # set timestamps, small text (and state fallback)
         activity['timestamps'] = {}
-        if state == ampris2.PlaybackStatus.PLAYING:
+        if state == PlaybackStatus.PLAYING:
             show_time = self.config.player_get(player, 'show_time', 'elapsed')
             start_time = int(time.time() - position / 1e6)
             if show_time == 'elapsed':
@@ -234,7 +233,7 @@ class DiscordMpris:
         # refresh active player (in case it restarted or sth)
         if active_player:
             for p in players:
-                if p.bus_name == self.active_player.bus_name:
+                if p.bus_name == active_player.bus_name:
                     active_player = p
                     break
             else:
@@ -243,15 +242,14 @@ class DiscordMpris:
 
         groups = await self.group_players(players)
         if logger.isEnabledFor(logging.DEBUG):
-            debug_list = [(state, ", ".join(p.bus_name for p in group))
-                          for state, group in zip(STATE_PRIORITY, groups)]
+            debug_list = [(state, ", ".join(p.bus_name for p in groups[state]))
+                          for state in STATE_PRIORITY]
             logger.debug(f"found players: {debug_list}")
 
         # Prioritize last active player per group,
         # but don't check stopped players.
-        # We only want a stopped player
-        # if it was the active one before.
-        for state, group in zip(STATE_PRIORITY, groups[:2]):
+        for state in STATE_PRIORITY[:2]:
+            group = groups[state]
             candidates: List[Player] = []
             for p in group:
                 if p is active_player:
@@ -262,7 +260,7 @@ class DiscordMpris:
             for player in group:
                 if (
                     not self.config.player_get(player, "ignore", False)
-                    and (state == ampris2.PlaybackStatus.PLAYING
+                    and (state == PlaybackStatus.PLAYING
                          or self.config.player_get(player, 'show_paused', True))
                 ):
                     return player
@@ -291,17 +289,14 @@ class DiscordMpris:
         replacements['album'] = metadata.get('xesam:album', "")
 
         # replace invalid indent char
-        for key in replacements:
-            if ':' in key:
-                replacements[key.replace(':', '_')] = replacements[key]
-                del replacements[key]
+        replacements = {key.replace(':', '_'): val for key, val in replacements.items()}
 
         return replacements
 
     @staticmethod
     async def group_players(players: Iterable[Player]
-                            ) -> List[List[ampris2.PlayerInterfaces]]:
-        groups: List[List[ampris2.PlayerInterfaces]] = [[], [], []]
+                            ) -> Dict[PlaybackStatus, List[Player]]:
+        groups: Dict[PlaybackStatus, List[Player]] = {state: [] for state in PlaybackStatus}
         for p in players:
             playbackStatus = await p.player.PlaybackStatus
             try:
@@ -309,8 +304,7 @@ class DiscordMpris:
             except ValueError as error:
                 logger.info(f"Caugh a ValueError {playbackStatus}")
                 continue
-            i = STATE_PRIORITY.index(state)
-            groups[i].append(p)
+            groups[state].append(p)
 
         return groups
 
@@ -320,11 +314,11 @@ class DiscordMpris:
             return None
         microsecs = int(microsecs)
         secs = microsecs // int(1e6)
-        mins = secs // 60
-        hours = mins // 60
-        string = f"{mins % 60:d}:{secs % 60:02d}"
+        mins, secs = divmod(secs, 60)
+        hours, mins = divmod(mins, 60)
+        string = f"{mins:d}:{secs:02d}"
         if hours > 0:
-            string = f"{hours:d}:{mins % 60:02d}:{secs % 60:02d}"
+            string = f"{hours:d}:{mins:02d}:{secs:02d}"
         return string
 
     @staticmethod
@@ -335,11 +329,18 @@ class DiscordMpris:
 async def main_async(loop: asyncio.AbstractEventLoop):
     config = Config.load()
     # TODO validate?
-    if config.raw_get('global.debug', False):
-        logging.getLogger().setLevel(logging.DEBUG)
-        logger.debug(f"Config: {config.raw_config}")
 
-    mpris = await ampris2.Mpris2Dbussy.create(loop=loop)
+    log_level_name = None
+    if config.raw_get('global.debug', False):
+        log_level_name = 'DEBUG'
+    log_level_name = config.raw_get('global.log_level', log_level_name)
+    if log_level_name and log_level_name.isupper():
+        log_level = getattr(logging, log_level_name, logging.WARNING)
+        logging.getLogger().setLevel(log_level)
+
+    logger.debug(f"Config: {config.raw_config}")
+
+    mpris = await Mpris2Dbussy.create(loop=loop)
     async with AsyncDiscordRpc.for_platform(CLIENT_ID) as discord:
         instance = DiscordMpris(mpris, discord, config)
         return await instance.run()
