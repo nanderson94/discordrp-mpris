@@ -175,7 +175,7 @@ class DiscordMpris:
                 small_text = self.format_details("{state} [LIVE]", replacements)
             else:
                 small_text = self.format_details("{state}", replacements)
-        elif state == ampris2.PlaybackStatus.PAUSED:
+        elif state == PlaybackStatus.PAUSED:
             if replacements['length'] != "0:00":
                 small_text = self.format_details("{state} [{position}/{length}]", replacements)
             else:
