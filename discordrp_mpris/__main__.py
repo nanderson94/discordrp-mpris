@@ -37,6 +37,7 @@ PLAYER_ICONS = {
     'Mozilla Firefox': 'firefox-papirus',
     'mpv': 'mpv-papirus',
     'SMPlayer': 'smplayer-papirus',
+    'Spotify on Mozilla Firefox': 'spotify-papirus', # papirus icon only
     'Strawberry': 'strawberry-papirus', # papirus icon only
     'VLC media player': 'vlc-papirus',
     'YouTube on Mozilla Firefox': 'youtube-papirus',
@@ -154,9 +155,11 @@ class DiscordMpris:
         # currently having interface issues with Chromium browsers
         # otherwise (player.bus_name == "plasma-browser-integration") would be a decent alternative
         if replacements['player'] == "Mozilla Firefox" and replacements['xesam_url']:
-            matchObj = re.match(r'^https://(www|music)\.youtube\.com/watch\?.*$', replacements['xesam_url'], re.M)
-            if matchObj:
+            if re.match(r'^https?://(www|music)\.youtube\.com/watch\?.*$', replacements['xesam_url'], re.M):
                 large_text = f"YouTube on {large_text}"
+                large_image = PLAYER_ICONS[large_text]
+            elif re.match(r'^https?://open\.spotify\.com/.*$', replacements['xesam_url'], re.M):
+                large_text = f"Spotify on {large_text}"
                 large_image = PLAYER_ICONS[large_text]
 
         # set timestamps, small text (and state fallback)
