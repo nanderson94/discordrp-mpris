@@ -151,9 +151,10 @@ class DiscordMpris:
         else:
             large_text = replacements['player']
 
-        # modify large text if playing YouTube on web browsers
+        # modify large text if playing YouTube or Spotify on web browsers
         # currently having interface issues with Chromium browsers
-        # otherwise (player.bus_name == "plasma-browser-integration") would be a decent alternative
+        # ERROR:ampris2:Unable to fetch interfaces for player 'chrome.instanceXXXXX' - org.freedesktop.DBus.Error.UnknownInterface -- peer “org.mpris.MediaPlayer2.chrome.instanceXXXXX” object “/org/mpris/MediaPlayer2” does not understand interface “org.mpris.MediaPlayer2”
+        # otherwise (player.bus_name == "plasma-browser-integration") would have been a decent alternative
         if replacements['player'] == "Mozilla Firefox" and replacements['xesam_url']:
             if re.match(r'^https?://(www|music)\.youtube\.com/watch\?.*$', replacements['xesam_url'], re.M):
                 large_text = f"YouTube on {large_text}"
