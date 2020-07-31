@@ -300,7 +300,7 @@ class DiscordMpris:
         for p in players:
             playbackStatus = await p.player.PlaybackStatus
             try:
-                state = ampris2.PlaybackStatus(playbackStatus)
+                state = PlaybackStatus(playbackStatus)
             except ValueError as error:
                 logger.info(f"Caugh a ValueError {playbackStatus}")
                 continue
