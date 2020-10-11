@@ -126,12 +126,18 @@ class DiscordMpris:
         self.active_player = player
 
         activity: JSON = {}
-        metadata, position, state = \
-            await asyncio.gather(
-                player.player.Metadata,  # type: ignore
-                player.player.Position,  # type: ignore
-                player.player.PlaybackStatus,  # type: ignore
-            )
+
+        try:
+            metadata, position, state = \
+                await asyncio.gather(
+                    player.player.Metadata,  # type: ignore
+                    player.player.Position,  # type: ignore
+                    player.player.PlaybackStatus,  # type: ignore
+                )
+        except Exception as e:
+            logger.warn(f"{e.__class__} occurred with player {self.active.player.bus_name!r}")
+            return
+
         metadata = unwrap_metadata(metadata)
         logger.debug(f"Metadata: {metadata}")
         length = metadata.get('mpris:length', 0)
