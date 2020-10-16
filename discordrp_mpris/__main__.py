@@ -135,7 +135,7 @@ class DiscordMpris:
                     player.player.PlaybackStatus,  # type: ignore
                 )
         except Exception as e:
-            logger.warn(f"{e.__class__} occurred with player {self.active.player.bus_name!r}")
+            logger.warn(f"{self.active_player.bus_name}:{e}")
             return
 
         metadata = unwrap_metadata(metadata)
