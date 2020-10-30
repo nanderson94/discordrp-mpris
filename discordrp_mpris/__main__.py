@@ -40,7 +40,7 @@ PLAYER_ICONS = {
     'Spotify on Mozilla Firefox': 'spotify-papirus', # papirus icon only
     'Strawberry': 'strawberry-papirus', # papirus icon only
     'VLC media player': 'vlc-papirus',
-    'YouTube on Mozilla Firefox': 'youtube-papirus',
+    'YouTube on Mozilla Firefox': 'youtube-on-firefox-papirus',
     'youtube': 'youtube-papirus' # i forgot which app used this exact player name for its mpris2 interface
 }
 PLAYER_ALIASES = {
