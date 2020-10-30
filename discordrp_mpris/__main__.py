@@ -24,21 +24,19 @@ PLAYER_ICONS = {
 
 # The icons below use Papirus icon theme.
 # https://github.com/PapirusDevelopmentTeam/papirus-icon-theme/.
-# Unless stated otherwise, their original icons can be used
-# by removing "-papirus" suffix.
 CLIENT_ID = '634301827558670357'
 PLAYER_ICONS = {
     'Chromium': 'chromium-papirus',
     'Clementine': 'clementine-papirus',
-    'Elisa': 'elisa-papirus', # papirus icon only
-    'Google Chrome': 'google-chrome-papirus', # papirus icon only
+    'Elisa': 'elisa-papirus',
+    'Google Chrome': 'google-chrome-papirus',
     'Gwenview': 'gwenview-papirus',
     'Media Player Classic Qute Theater': 'mpc-qt-papirus',
     'Mozilla Firefox': 'firefox-papirus',
     'mpv': 'mpv-papirus',
     'SMPlayer': 'smplayer-papirus',
-    'Spotify on Mozilla Firefox': 'spotify-papirus', # papirus icon only
-    'Strawberry': 'strawberry-papirus', # papirus icon only
+    'Spotify on Mozilla Firefox': 'spotify-papirus',
+    'Strawberry': 'strawberry-papirus',
     'VLC media player': 'vlc-papirus',
     'YouTube on Mozilla Firefox': 'youtube-on-firefox-papirus',
     'youtube': 'youtube-papirus' # i forgot which app used this exact player name for its mpris2 interface
