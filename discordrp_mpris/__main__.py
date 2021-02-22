@@ -119,6 +119,11 @@ class DiscordMpris:
                 self.last_activity = None
             self.active_player = None
             return
+
+        # firefox's own basic MPRIS2 interface (only basic play/pause/stop controls)
+        if player.bus_name.startswith("firefox.instance"):
+            return
+
         # store for future prioritization
         if not self.active_player or self.active_player.bus_name != player.bus_name:
             logger.info(f"Selected player bus {player.bus_name!r}")
