@@ -32,7 +32,7 @@ PLAYER_ICONS = {
     'Google Chrome': 'google-chrome-papirus',
     'Gwenview': 'gwenview-papirus',
     'Media Player Classic Qute Theater': 'mpc-qt-papirus',
-    'Mozilla Firefox': 'firefox-papirus',
+    'Firefox Web Browser': 'firefox-papirus',
     'mpv': 'mpv-papirus',
     'SMPlayer': 'smplayer-papirus',
     'Spotify on Mozilla Firefox': 'spotify-papirus',
@@ -44,6 +44,7 @@ PLAYER_ICONS = {
 PLAYER_ALIASES = {
     'Clementine': 'Clementine Music Player',
     'Elisa': 'Elisa Music Player',
+    'Firefox Web Browser': 'Mozilla Firefox',
     'Strawberry': 'Strawberry Music Player'
 }
 DEFAULT_LOG_LEVEL = logging.WARNING
@@ -158,8 +159,7 @@ class DiscordMpris:
         # modify large text if playing YouTube or Spotify on web browsers
         # currently having interface issues with Chromium browsers
         # ERROR:ampris2:Unable to fetch interfaces for player 'chrome.instanceXXXXX' - org.freedesktop.DBus.Error.UnknownInterface -- peer “org.mpris.MediaPlayer2.chrome.instanceXXXXX” object “/org/mpris/MediaPlayer2” does not understand interface “org.mpris.MediaPlayer2”
-        # otherwise (player.bus_name == "plasma-browser-integration") would have been a decent alternative
-        if replacements['player'] == "Mozilla Firefox" and replacements['xesam_url']:
+        if player.bus_name == "plasma-browser-integration" and replacements['xesam_url']:
             if re.match(r'^https?://(www|music)\.youtube\.com/watch\?.*$', replacements['xesam_url'], re.M):
                 large_text = f"YouTube on {large_text}"
                 large_image = PLAYER_ICONS[large_text]
