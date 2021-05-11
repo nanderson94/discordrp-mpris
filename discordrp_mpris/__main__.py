@@ -197,14 +197,24 @@ class DiscordMpris:
             small_text = self.format_details("{state}", replacements)
 
         # set details and state
+        # i don't know python enough to know how to simplify these codes
         activity['details'] = self.format_details("{title}", replacements)
         if replacements['artist']:
             if replacements['album']:
-                activity['state'] = self.format_details("by {artist} on {album}", replacements)
+                if replacements['year']:
+                    activity['state'] = self.format_details("by {artist} on {album} [{year}]", replacements)
+                else:
+                    activity['state'] = self.format_details("by {artist} on {album}", replacements)
             else:
-                activity['state'] = self.format_details("by {artist}", replacements)
+                if replacements['year']:
+                    activity['state'] = self.format_details("by {artist} [{year}]", replacements)
+                else:
+                    activity['state'] = self.format_details("by {artist}", replacements)
         elif replacements['album']:
-            activity['state'] = self.format_details("on {album}", replacements)
+            if replacements['year']:
+                activity['state'] = self.format_details("on {album} [{year}]", replacements)
+            else:
+                activity['state'] = self.format_details("on {album}", replacements)
         else:
             activity['state'] = small_text
 
