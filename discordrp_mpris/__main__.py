@@ -200,11 +200,11 @@ class DiscordMpris:
         activity['details'] = self.format_details("{title}", replacements)
         if replacements['artist']:
             if replacements['album']:
-                activity['state'] = self.format_details("{artist} on {album}", replacements)
+                activity['state'] = self.format_details("by {artist} on {album}", replacements)
             else:
-                activity['state'] = self.format_details("{artist}", replacements)
+                activity['state'] = self.format_details("by {artist}", replacements)
         elif replacements['album']:
-            activity['state'] = self.format_details("{album}", replacements)
+            activity['state'] = self.format_details("on {album}", replacements)
         else:
             activity['state'] = small_text
 
