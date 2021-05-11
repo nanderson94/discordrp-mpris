@@ -180,7 +180,7 @@ class DiscordMpris:
             if show_time == 'elapsed':
                 activity['timestamps']['start'] = start_time
             elif show_time == 'remaining':
-                end_time = start_time + (length / 1e6)
+                end_time = int(start_time + (length / 1e6))
                 activity['timestamps']['end'] = end_time
             if replacements['length'] != "0:00":
                 small_text = self.format_details("{state} [{length}]", replacements)
