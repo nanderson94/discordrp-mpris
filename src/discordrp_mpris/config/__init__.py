@@ -1,9 +1,8 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
-
 import pytoml
+from typing import Any, Dict, Optional
 
 from ampris2 import PlayerInterfaces as Player
 

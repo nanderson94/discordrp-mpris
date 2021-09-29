@@ -1,4 +1,5 @@
 import asyncio
+import dbussy
 import logging
 import re
 import sys
@@ -6,9 +7,7 @@ import time
 from typing import Dict, Iterable, List, Optional
 
 from ampris2 import Mpris2Dbussy, PlaybackStatus, PlayerInterfaces as Player, unwrap_metadata
-import dbussy
-from discord_rpc.async_ import (AsyncDiscordRpc, DiscordRpcError, JSON,
-                                exceptions as async_exceptions)
+from discord_rpc.async_ import JSON, AsyncDiscordRpc, DiscordRpcError, exceptions as async_exceptions
 
 from .config import Config
 
@@ -39,22 +38,24 @@ PLAYER_ICONS = {
     'Strawberry': 'strawberry-papirus',
     'VLC media player': 'vlc-papirus',
     'YouTube on Mozilla Firefox': 'youtube-on-firefox-papirus',
-    'youtube': 'youtube-papirus' # i forgot which app used this exact player name for its mpris2 interface
+    'youtube': 'youtube-papirus',  # i forgot which app used this exact player name for its mpris2 interface
 }
 PLAYER_ALIASES = {
     'Clementine': 'Clementine Music Player',
     'Elisa': 'Elisa Music Player',
     'Firefox Web Browser': 'Mozilla Firefox',
-    'Strawberry': 'Strawberry Music Player'
+    'Strawberry': 'Strawberry Music Player',
 }
 DEFAULT_LOG_LEVEL = logging.WARNING
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=DEFAULT_LOG_LEVEL)
 
-STATE_PRIORITY = (PlaybackStatus.PLAYING,
-                  PlaybackStatus.PAUSED,
-                  PlaybackStatus.STOPPED)
+STATE_PRIORITY = (
+    PlaybackStatus.PLAYING,
+    PlaybackStatus.PAUSED,
+    PlaybackStatus.STOPPED,
+)
 
 
 class DiscordMpris:
@@ -62,8 +63,12 @@ class DiscordMpris:
     active_player: Optional[Player] = None
     last_activity: Optional[JSON] = None
 
-    def __init__(self, mpris: Mpris2Dbussy, discord: AsyncDiscordRpc, config: Config,
-                 ) -> None:
+    def __init__(
+        self,
+        mpris: Mpris2Dbussy,
+        discord: AsyncDiscordRpc,
+        config: Config,
+    ) -> None:
         self.mpris = mpris
         self.discord = discord
         self.config = config
@@ -132,12 +137,11 @@ class DiscordMpris:
         activity: JSON = {}
 
         try:
-            metadata, position, state = \
-                await asyncio.gather(
-                    player.player.Metadata,  # type: ignore
-                    player.player.Position,  # type: ignore
-                    player.player.PlaybackStatus,  # type: ignore
-                )
+            metadata, position, state = await asyncio.gather(
+                player.player.Metadata,  # type: ignore
+                player.player.Position,  # type: ignore
+                player.player.PlaybackStatus,  # type: ignore
+            )
         except Exception as e:
             logger.warn(f"{self.active_player.bus_name}:{e}")
             return
@@ -165,10 +169,18 @@ class DiscordMpris:
         # currently having interface issues with Chromium browsers
         # ERROR:ampris2:Unable to fetch interfaces for player 'chrome.instanceXXXXX' - org.freedesktop.DBus.Error.UnknownInterface -- peer “org.mpris.MediaPlayer2.chrome.instanceXXXXX” object “/org/mpris/MediaPlayer2” does not understand interface “org.mpris.MediaPlayer2”
         if player.bus_name == "plasma-browser-integration" and replacements['xesam_url']:
-            if re.match(r'^https?://(www|music)\.youtube\.com/watch\?.*$', replacements['xesam_url'], re.M):
+            if re.match(
+                r'^https?://(www|music)\.youtube\.com/watch\?.*$',
+                replacements['xesam_url'],
+                re.M,
+            ):
                 large_text = f"YouTube on {large_text}"
                 large_image = PLAYER_ICONS[large_text]
-            elif re.match(r'^https?://open\.spotify\.com/.*$', replacements['xesam_url'], re.M):
+            elif re.match(
+                r'^https?://open\.spotify\.com/.*$',
+                replacements['xesam_url'],
+                re.M,
+            ):
                 large_text = f"Spotify on {large_text}"
                 large_image = PLAYER_ICONS[large_text]
 
@@ -220,13 +232,17 @@ class DiscordMpris:
 
         # set icons and hover texts
         if replacements['player'] in PLAYER_ICONS:
-            activity['assets'] = {'large_text': large_text,
-                                  'large_image': large_image,
-                                  'small_image': state.lower(),
-                                  'small_text': small_text}
+            activity['assets'] = {
+                'large_text': large_text,
+                'large_image': large_image,
+                'small_image': state.lower(),
+                'small_text': small_text,
+            }
         else:
-            activity['assets'] = {'large_text': f"{large_text} ({state})",
-                                  'large_image': state.lower()}
+            activity['assets'] = {
+                'large_text': f"{large_text} ({state})",
+                'large_image': state.lower(),
+            }
 
         # slice strings
         if activity['state'] and (len(activity['state']) > 128):
@@ -265,8 +281,7 @@ class DiscordMpris:
 
         groups = await self.group_players(players)
         if logger.isEnabledFor(logging.DEBUG):
-            debug_list = [(state, ", ".join(p.bus_name for p in groups[state]))
-                          for state in STATE_PRIORITY]
+            debug_list = [(state, ", ".join(p.bus_name for p in groups[state])) for state in STATE_PRIORITY]
             logger.debug(f"found players: {debug_list}")
 
         # Prioritize last active player per group,
@@ -281,10 +296,8 @@ class DiscordMpris:
                     candidates.append(p)
 
             for player in group:
-                if (
-                    not self.config.player_get(player, "ignore", False)
-                    and (state == PlaybackStatus.PLAYING
-                         or self.config.player_get(player, 'show_paused', True))
+                if not self.config.player_get(player, "ignore", False) and (
+                    state == PlaybackStatus.PLAYING or self.config.player_get(player, 'show_paused', True)
                 ):
                     return player
 
@@ -295,7 +308,7 @@ class DiscordMpris:
             return None
 
     def _player_not_ignored(self, player: Player) -> bool:
-        return (not self.config.player_get(player, "ignore", False))
+        return not self.config.player_get(player, "ignore", False)
 
     def build_replacements(self, player: Player, metadata) -> Dict[str, Optional[str]]:
         replacements = metadata.copy()
@@ -317,8 +330,9 @@ class DiscordMpris:
         return replacements
 
     @staticmethod
-    async def group_players(players: Iterable[Player]
-                            ) -> Dict[PlaybackStatus, List[Player]]:
+    async def group_players(
+        players: Iterable[Player],
+    ) -> Dict[PlaybackStatus, List[Player]]:
         groups: Dict[PlaybackStatus, List[Player]] = {state: [] for state in PlaybackStatus}
         for p in players:
             playbackStatus = await p.player.PlaybackStatus

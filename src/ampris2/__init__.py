@@ -1,11 +1,10 @@
 import asyncio
+import dbussy
 import enum
 import functools
 import logging
-from typing import Any, Dict, NamedTuple, Optional, Sequence, TypeVar
-
-import dbussy
 import ravel
+from typing import Any, Dict, NamedTuple, Optional, Sequence, TypeVar
 
 ProxyInterface = ravel.BusPeer.Object.ProxyInterface  # type alias
 
@@ -48,7 +47,7 @@ async def _list_bus_names(bus):
 
 
 # https://specifications.freedesktop.org/mpris-spec/2.2/
-class Mpris2Dbussy():
+class Mpris2Dbussy:
 
     BUS_BASE_NAME = 'org.mpris.MediaPlayer2'
     PATH_NAME = '/org/mpris/MediaPlayer2'
@@ -70,8 +69,7 @@ class Mpris2Dbussy():
 
     async def get_player_names(self):
         bus_names = await _list_bus_names(self.bus)
-        bus_names = [n for n in bus_names
-                     if n.startswith(self.BUS_BASE_NAME + '.')]
+        bus_names = [n for n in bus_names if n.startswith(self.BUS_BASE_NAME + '.')]
         strip_len = len(self.BUS_BASE_NAME) + 1
         return [n[strip_len:] for n in bus_names]
 
@@ -85,8 +83,10 @@ class Mpris2Dbussy():
         # dbussy.DBusError: org.freedesktop.DBus.Error.UnknownInterface
         #   -- Object does not implement the interface
         obj = self.get_player_object(bus_name)
-        iface_names = [self.IFACE_NAME,
-                       *(f"{self.IFACE_NAME}.{sub}" for sub in self.SUB_IFACES)]
+        iface_names = [
+            self.IFACE_NAME,
+            *(f"{self.IFACE_NAME}.{sub}" for sub in self.SUB_IFACES),
+        ]
         coros = (obj.get_async_interface(if_name) for if_name in iface_names)
         results = await asyncio.gather(*coros, return_exceptions=True)
         args = []

@@ -7,7 +7,7 @@ and prints their status.
 import asyncio
 import pprint
 
-from . import Mpris2Dbussy, unwrap_metadata
+from ampris2 import Mpris2Dbussy, unwrap_metadata
 
 
 async def async_main():

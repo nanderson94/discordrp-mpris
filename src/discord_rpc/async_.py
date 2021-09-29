@@ -11,11 +11,10 @@ from functools import wraps
 import json
 import logging
 import os
-import sys
 import struct
-from typing import cast, Any, Dict, Tuple
+import sys
+from typing import Any, Dict, Tuple, cast
 import uuid
-
 
 OP_HANDSHAKE = 0
 OP_FRAME = 1
@@ -52,8 +51,7 @@ class AsyncDiscordRpc(metaclass=ABCMeta):
     Supports asynchronous context handler protocol.
     """
 
-    def __init__(self, client_id: str, *,
-                 loop: asyncio.AbstractEventLoop = None) -> None:
+    def __init__(self, client_id: str, *, loop: asyncio.AbstractEventLoop = None) -> None:
         self.client_id = client_id
         self.loop = loop
 
@@ -68,9 +66,13 @@ class AsyncDiscordRpc(metaclass=ABCMeta):
         # logger.debug("connected via ID %s", self.client_id)
 
     @classmethod
-    def for_platform(cls, client_id: str, platform=sys.platform, *,
-                     loop: asyncio.AbstractEventLoop = None,
-                     ) -> 'AsyncDiscordRpc':
+    def for_platform(
+        cls,
+        client_id: str,
+        platform=sys.platform,
+        *,
+        loop: asyncio.AbstractEventLoop = None,
+    ) -> 'AsyncDiscordRpc':
         if platform == 'win32':
             return NotImplemented  # async is a pain for windows pipes
         else:
@@ -82,8 +84,7 @@ class AsyncDiscordRpc(metaclass=ABCMeta):
 
     async def _do_handshake(self) -> None:
         while True:
-            ret_op, ret_data = await self.send_recv({'v': 1, 'client_id': self.client_id},
-                                                    op=OP_HANDSHAKE)
+            ret_op, ret_data = await self.send_recv({'v': 1, 'client_id': self.client_id}, op=OP_HANDSHAKE)
             # {'cmd': 'DISPATCH', 'data': {'v': 1, 'config': {...}}, 'evt': 'READY', 'nonce': None}
             if ret_op == OP_FRAME and ret_data['cmd'] == 'DISPATCH' and ret_data['evt'] == 'READY':
                 return
@@ -172,9 +173,8 @@ class AsyncDiscordRpc(metaclass=ABCMeta):
     async def set_activity(self, act: JSON) -> Reply:
         data = {
             'cmd': 'SET_ACTIVITY',
-            'args': {'pid': os.getpid(),
-                     'activity': act},
-            'nonce': str(uuid.uuid4())
+            'args': {'pid': os.getpid(), 'activity': act},
+            'nonce': str(uuid.uuid4()),
         }
         return await self.send_recv(data)
 
@@ -182,7 +182,7 @@ class AsyncDiscordRpc(metaclass=ABCMeta):
         data = {
             'cmd': 'SET_ACTIVITY',
             'args': {'pid': os.getpid()},
-            'nonce': str(uuid.uuid4())
+            'nonce': str(uuid.uuid4()),
         }
         return await self.send_recv(data)
 
@@ -203,8 +203,7 @@ class UnixAsyncDiscordRpc(AsyncDiscordRpc):
             if not os.path.exists(path):
                 continue
             try:
-                self.reader, self.writer = \
-                    await asyncio.open_unix_connection(path, loop=self.loop)
+                self.reader, self.writer = await asyncio.open_unix_connection(path, loop=self.loop)
             except OSError as e:
                 logger.error("failed to open {!r}: {}".format(path, e))
             else:
@@ -231,6 +230,7 @@ class UnixAsyncDiscordRpc(AsyncDiscordRpc):
             except exceptions:
                 self.reader.feed_eof()
                 raise
+
         return wrapper
 
     @_disconnect_on_error

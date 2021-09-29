@@ -10,10 +10,9 @@ import json
 import logging
 import os
 import socket
-import sys
 import struct
+import sys
 import uuid
-
 
 OP_HANDSHAKE = 0
 OP_FRAME = 1
@@ -138,9 +137,8 @@ class DiscordRpc(metaclass=ABCMeta):
     def set_activity(self, act):
         data = {
             'cmd': 'SET_ACTIVITY',
-            'args': {'pid': os.getpid(),
-                     'activity': act},
-            'nonce': str(uuid.uuid4())
+            'args': {'pid': os.getpid(), 'activity': act},
+            'nonce': str(uuid.uuid4()),
         }
         return self.send_recv(data)
 
@@ -148,7 +146,7 @@ class DiscordRpc(metaclass=ABCMeta):
         data = {
             'cmd': 'SET_ACTIVITY',
             'args': {'pid': os.getpid()},
-            'nonce': str(uuid.uuid4())
+            'nonce': str(uuid.uuid4()),
         }
         return self.send_recv(data)
 
@@ -183,7 +181,6 @@ class WinDiscordRpc(DiscordRpc):
 
 
 class UnixDiscordRpc(DiscordRpc):
-
     def _connect(self):
         self._sock = socket.socket(socket.AF_UNIX)
         pipe_pattern = self._get_pipe_pattern()

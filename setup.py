@@ -1,8 +1,15 @@
-import re
 from pathlib import Path
-from setuptools import setup, find_packages
+import re
+from setuptools import find_packages, setup
 
 __folder__ = Path(__file__).parent
+
+install_requires = [
+    "dbussy",
+    "pytoml",
+]
+
+test_require = ["pytest", "coverage", "pytest-cov"]
 
 
 def read(*path_leaves, **kwargs):
@@ -22,8 +29,9 @@ def find_version(*path_leaves):
 
 setup(
     name="discordrp-mpris",
-    packages=find_packages(exclude=["tests"]),
-    version=find_version("discordrp_mpris", "__init__.py"),
+    packages=find_packages("src", exclude=["tests"]),
+    package_dir={"": "src"},
+    version=find_version("src", "discordrp_mpris", "__init__.py"),
     description="Discord Rich Presence based on mpris2 media players",
     long_description=read("README.md"),
     url="https://github.com/FichteFoll/discordrp-mpris",
@@ -42,7 +50,16 @@ setup(
         'Topic :: Communications :: Chat :: Discord',  # not in the list above
         # 'Topic :: System',
     ],
-    keywords=["discord", "discord rich presence", "mpris2", "media", "dbus", "mpd", "mpv", "vlc"],
+    keywords=[
+        "discord",
+        "discord rich presence",
+        "mpris2",
+        "media",
+        "dbus",
+        "mpd",
+        "mpv",
+        "vlc",
+    ],
     entry_points={
         'console_scripts': [
             "discordrp-mpris=discordrp_mpris.__main__:main",
@@ -53,7 +70,9 @@ setup(
             "config.toml",
         ]
     },
-    install_requires=["dbussy", "pytoml"],
+    install_requires=install_requires,
+    tests_require=test_require,
+    test_suite="tests",
     # dependency_links=["https://github.com/ldo/dbussy"],
-    python_requires=">=3.6",
+    python_requires=">=3.7",
 )
